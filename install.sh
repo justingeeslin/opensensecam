@@ -17,7 +17,7 @@ SCRIPT_SRC="./src/"
 DESKTOP_SRC="./$APP_ID.desktop"
 ICON_SRC="./icon.png"
 
-SCRIPT_DEST="$APP_DIR/src/index.py"
+SCRIPT_DEST="$APP_DIR/"
 DESKTOP_DEST="$DESKTOP_DIR/$APP_ID.desktop"
 ICON_DEST="$APP_DIR/icon.png"
 
@@ -28,10 +28,11 @@ echo "📦 Installing $APP_ID..."
 
 # Create directories
 mkdir -p "$APP_DIR"
+mkdir -p "$APP_DIR/src"
 mkdir -p "$DESKTOP_DIR"
 
 # Copy files
-cp "$SCRIPT_SRC" "$SCRIPT_DEST"
+cp -r "$SCRIPT_SRC" "$SCRIPT_DEST"
 cp "$DESKTOP_SRC" "$DESKTOP_DEST"
 
 # Optional icon
