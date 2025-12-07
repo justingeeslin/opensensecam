@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Hello Raspberry Pi
+Comment=Simple Tkinter Hello World App
+Exec=/home/jg/.local/share/applications/hello-pi/hello-gui.py
+Terminal=false
+Categories=Utility;
