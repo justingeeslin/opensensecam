@@ -31,7 +31,7 @@ mkdir -p "$APP_DIR"
 mkdir -p "$DESKTOP_DIR"
 
 # Copy files
-cp "$SCRIPT_SRC" "$SCRIPT_DEST"
+cp -r "$SCRIPT_SRC" "$SCRIPT_DEST"
 cp "$DESKTOP_SRC" "$DESKTOP_DEST"
 
 # Optional icon
