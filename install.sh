@@ -17,7 +17,7 @@ SCRIPT_SRC="./src/"
 DESKTOP_SRC="./$APP_ID.desktop"
 ICON_SRC="./icon.png"
 
-SCRIPT_DEST="$APP_DIR/src/index.py"
+SCRIPT_DEST="$APP_DIR/src/"
 DESKTOP_DEST="$DESKTOP_DIR/$APP_ID.desktop"
 ICON_DEST="$APP_DIR/icon.png"
 
