@@ -5,7 +5,7 @@ set -e
 # CONFIG (ONLY CHANGE THESE)
 # ==============================
 APP_ID="hello-pi"
-SERVICE_NAME="hello-pi-worker.service"   # name of your .service file in src/
+SERVICE_NAME="hello-pi.service"   # name of your .service file in src/
 
 # ==============================
 # DERIVED PATHS (USUALLY NO NEED TO CHANGE)
