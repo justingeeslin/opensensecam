@@ -1,103 +1,112 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
 # ==============================
 # CONFIG (ONLY CHANGE THESE)
 # ==============================
 APP_ID="hello-pi"
-SERVICE_NAME="hello-pi.service"   # name of your .service file in src/
+SERVICE_NAME="hello-pi.service"     # name of your .service file in src/
+SERVICE_USER="hello-pi"
 
 # ==============================
-# DERIVED PATHS (USUALLY NO NEED TO CHANGE)
+# DERIVED PATHS
 # ==============================
-# If run with sudo, install app for the *real* user, not root
-TARGET_USER="${SUDO_USER:-$USER}"
-USER_HOME="$(eval echo ~"$TARGET_USER")"
-
-APP_DIR="$USER_HOME/.local/share/$APP_ID"
-DESKTOP_DIR="$USER_HOME/.local/share/applications"
-
 SRC_DIR="./src"
 DESKTOP_SRC="./$APP_ID.desktop"
 ICON_SRC="./icon.png"
 
-SCRIPT_DEST_DIR="$APP_DIR/src"
-DESKTOP_DEST="$DESKTOP_DIR/$APP_ID.desktop"
-ICON_DEST="$APP_DIR/icon.png"
-
+APP_DIR="/opt/$APP_ID"
 SERVICE_SRC="$SRC_DIR/$SERVICE_NAME"
 SERVICE_DEST="/etc/systemd/system/$SERVICE_NAME"
 
-echo "📦 Installing $APP_ID for user: $TARGET_USER"
+DESKTOP_DEST="/usr/share/applications/$APP_ID.desktop"
+ICON_DEST="/usr/share/pixmaps/$APP_ID.png"
+
+# ==============================
+# REQUIRE ROOT (system install)
+# ==============================
+if [ "$(id -u)" -ne 0 ]; then
+  echo "❌ This installer now performs a system install. Run with sudo:"
+  echo "   sudo $0"
+  exit 1
+fi
+
+echo "📦 Installing system app: $APP_ID"
 echo "   App dir:        $APP_DIR"
 echo "   Desktop entry:  $DESKTOP_DEST"
+echo "   Service:        $SERVICE_DEST"
+echo "   Service user:   $SERVICE_USER"
 
 # ==============================
-# INSTALL APP FILES (per-user)
+# CREATE DEDICATED SERVICE USER
 # ==============================
-mkdir -p "$SCRIPT_DEST_DIR"
-mkdir -p "$DESKTOP_DIR"
+if id -u "$SERVICE_USER" >/dev/null 2>&1; then
+  echo "👤 Service user exists: $SERVICE_USER"
+else
+  echo "👤 Creating service user: $SERVICE_USER"
+  useradd \
+    --system \
+    --home "/var/lib/$APP_ID" \
+    --create-home \
+    --shell /usr/sbin/nologin \
+    "$SERVICE_USER"
+fi
 
-# Copy src/ tree into APP_DIR
-cp -r "$SRC_DIR/" "$APP_DIR/"
+# ==============================
+# INSTALL APP FILES (system-wide)
+# ==============================
+echo "🗂  Installing app files to $APP_DIR..."
+mkdir -p "$APP_DIR"
+rm -rf "$APP_DIR/src"
+cp -r "$SRC_DIR" "$APP_DIR/"
 
-# Copy .desktop launcher
-cp "$DESKTOP_SRC" "$DESKTOP_DEST"
+# Make python scripts executable if you rely on that (optional)
+if [ -f "$APP_DIR/src/index.py" ]; then
+  chmod +x "$APP_DIR/src/index.py"
+fi
 
-# Optional icon
+# Keep app code owned by root (read-only-ish)
+chown -R root:root "$APP_DIR"
+chmod -R a+rX "$APP_DIR"
+
+# ==============================
+# INSTALL DESKTOP ENTRY (system-wide)
+# ==============================
+if [ -f "$DESKTOP_SRC" ]; then
+  echo "🖥  Installing desktop entry to $DESKTOP_DEST..."
+  cp "$DESKTOP_SRC" "$DESKTOP_DEST"
+  chmod 644 "$DESKTOP_DEST"
+else
+  echo "ℹ️ No desktop file found at $DESKTOP_SRC – skipping."
+fi
+
+# ==============================
+# INSTALL ICON (system-wide)
+# ==============================
 if [ -f "$ICON_SRC" ]; then
+  echo "🖼️  Installing icon to $ICON_DEST..."
   cp "$ICON_SRC" "$ICON_DEST"
-  echo "🖼️  Icon installed"
-fi
-
-# Permissions: make launcher and main script executable
-if [ -f "$SCRIPT_DEST_DIR/index.py" ]; then
-  chmod +x "$SCRIPT_DEST_DIR/index.py"
-fi
-chmod +x "$DESKTOP_DEST"
-
-# Make sure files are owned by the target user if run with sudo
-if [ "$(id -u)" -eq 0 ] && [ -n "$SUDO_USER" ]; then
-  chown -R "$SUDO_USER":"$SUDO_USER" "$APP_DIR" "$DESKTOP_DEST"
+  chmod 644 "$ICON_DEST"
+else
+  echo "ℹ️ No icon found at $ICON_SRC – skipping."
 fi
 
 # ==============================
-# INSTALL SYSTEMD SERVICE (optional, needs root)
+# INSTALL SYSTEMD SERVICE
 # ==============================
 if [ -f "$SERVICE_SRC" ]; then
-  echo "🔧 Found service file in src/: $SERVICE_SRC"
+  echo "🔧 Found service file: $SERVICE_SRC"
+  echo "🛠  Installing systemd service to $SERVICE_DEST..."
+  cp "$SERVICE_SRC" "$SERVICE_DEST"
+  chmod 644 "$SERVICE_DEST"
 
-  if [ "$(id -u)" -ne 0 ]; then
-    echo "⚠️  Not root: skipping systemd service install."
-    echo "    To install the service, run: sudo $0"
-  else
-    echo "🛠  Installing systemd service to $SERVICE_DEST..."
-    cp "$SERVICE_SRC" "$SERVICE_DEST"
-    chmod 644 "$SERVICE_DEST"
+  systemctl daemon-reload
+  systemctl enable "$SERVICE_NAME"
 
-    systemctl daemon-reload
-    systemctl enable "$SERVICE_NAME"
-
-    echo "✅ Systemd service installed and enabled: $SERVICE_NAME"
-    echo "   You can start it with: sudo systemctl start $SERVICE_NAME"
-  fi
+  echo "✅ Service installed and enabled: $SERVICE_NAME"
+  echo "   Start it with: sudo systemctl start $SERVICE_NAME"
 else
   echo "ℹ️ No service file found at $SERVICE_SRC – skipping system service install."
 fi
 
-# ==============================
-# REFRESH MENU (for the real user)
-# ==============================
-if command -v lxpanelctl >/dev/null 2>&1; then
-  if [ "$(id -u)" -eq 0 ] && [ -n "$SUDO_USER" ]; then
-    # Refresh panel as the desktop user if run under sudo
-    sudo -u "$SUDO_USER" lxpanelctl restart || true
-  else
-    lxpanelctl restart || true
-  fi
-else
-  echo "ℹ️ lxpanelctl not found. Log out and back in to refresh the menu."
-fi
-
 echo "✅ Install complete!"
-echo "➡️ You should now see '$APP_ID' in the menu."
