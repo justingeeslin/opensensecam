@@ -1,0 +1,30 @@
+[Unit]
+Description=Hello Pi Background Worker
+After=network.target
+
+[Service]
+Type=simple
+
+# IMPORTANT: Use full absolute paths
+ExecStart=/usr/bin/python3 /home/jg/.local/share/hello-pi/src/worker.py
+
+# Always restart if it crashes
+Restart=on-failure
+RestartSec=3
+
+# Run as your normal user (NOT root)
+User=jg
+Group=jg
+
+# Ensure correct working directory
+WorkingDirectory=/home/jg/.local/share/hello-pi
+
+# Send stdout/stderr to journalctl
+StandardOutput=journal
+StandardError=journal
+
+# Environment safety
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
