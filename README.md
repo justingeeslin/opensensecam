@@ -5,5 +5,6 @@ A basic app that can be run from the Applications menu in Raspberry Pi OS. GUI w
 The installation process involves copying the app files to the user applications directory. 
 
 ```
-./install.sh
+sudo ./install.sh
 ```
+* `sudo` is required for installing services.
