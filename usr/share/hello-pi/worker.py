@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 
 APP_ID="hello-pi"
-CONFIG_PATH = Path(f"/etc/{APP_ID}/config.json")
+CONFIG_PATH = Path(f"/var/lib/{APP_ID}/config.json")
 
 def load_config() -> dict:
 	try:

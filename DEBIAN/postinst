@@ -1,0 +1,60 @@
+#!/bin/sh
+set -e
+
+# ==============================
+# CONFIG (ONLY CHANGE THESE)
+# ==============================
+APP_ID="hello-pi"
+SERVICE_NAME="hello-pi.service"     # name of your .service file in src/
+SERVICE_USER="hello-pi"
+CONFIG_PATH="/var/lib/$APP_ID"
+
+# ==============================
+# CREATE DEDICATED SERVICE USER
+# ==============================
+if id -u "$SERVICE_USER" >/dev/null 2>&1; then
+  echo "👤 Service user exists: $SERVICE_USER"
+else
+  echo "👤 Creating service user: $SERVICE_USER"
+  useradd \
+	--system \
+	--home "/var/lib/$APP_ID" \
+	--create-home \
+	--shell /usr/sbin/nologin \
+	"$SERVICE_USER"
+fi
+
+if getent group $SERVICE_USER > /dev/null; then
+  echo "Group exists"
+else
+  echo "👤 Creating service group: $SERVICE_USER"  
+  groupadd $SERVICE_USER
+  usermod -aG $SERVICE_USER $SERVICE_USER
+ 
+fi
+
+# Add the current installing user to the service group 
+echo "Adding $SUDO_USER to the group $SERVICE_USER"
+usermod -aG $SERVICE_USER $SUDO_USER
+
+# sudo chown -R $SERVICE_USER:$SERVICE_USER $CONFIG_PATH
+# sudo chmod 2775 $CONFIG_PATH
+
+install -d -o hello-pi -g hello-pi -m 0755 $CONFIG_PATH
+
+# Create directory for saving config
+# echo "🛠️ Creating config path in $CONFIG_PATH"
+# mkdir -p $CONFIG_PATH
+# chown root:$SERVICE_USER $CONFIG_PATH
+# chmod 775 $CONFIG_PATH
+touch $CONFIG_PATH/config.json
+# chown root:$SUDO_USER $CONFIG_PATH/config.json
+
+# Tired of fighting with permissions etc. World write.
+chmod 777 $CONFIG_PATH/config.json
+
+systemctl daemon-reload
+# systemctl enable hello-pi.service
+# systemctl start hello-pi.service
+
+exit 0

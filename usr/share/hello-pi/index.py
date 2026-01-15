@@ -7,11 +7,11 @@ from tkinter import messagebox
 from tkinter import filedialog
 
 APP_ID="hello-pi"
-APP_DIR=f"/etc/{APP_ID}"
-CONFIG_PATH = Path(f"/etc/{APP_ID}/config.json")
+APP_DIR=f"/var/lib/{APP_ID}"
+CONFIG_PATH = Path(f"/var/lib/{APP_ID}/config.json")
 
 SERVICE_NAME = f"{APP_ID}.service"      # systemd unit name
-WORKER_REL_PATH = Path("src/worker.py")       # script the service runs
+WORKER_REL_PATH = Path(f"/usr/share/{APP_ID}/worker.py")       # script the service runs
 
 
 class ServiceController:
@@ -33,7 +33,8 @@ class ServiceController:
 
         # index.py is .../hello-pi/src, so app_root is one level up
         self._app_root = Path(__file__).resolve().parent.parent
-        self._service_script = self._app_root / worker_rel_path
+        print(f"Setting service script to {worker_rel_path}")
+        self._service_script = worker_rel_path
 
         # SYSTEM service location (requires root)
         self._unit_path = Path("/etc/systemd/system") / self.service_name
@@ -108,30 +109,21 @@ class ServiceController:
         return self._run_systemctl("is-active", self.service_name)
 
 
+DEFAULT_CONFIG = {"folder": "~/", "mode": "mode_a", "note": ""}
+
 def load_config() -> dict:
     try:
-        with CONFIG_PATH.open("r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return {}
+        if not CONFIG_PATH.exists():
+            return DEFAULT_CONFIG.copy()
+        return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
     except Exception:
-        # If config is corrupt or unreadable, don’t crash the UI
-        return {}
+        return DEFAULT_CONFIG.copy()
 
 def save_config(data: dict) -> tuple[bool, str]:
     try:
         CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
-        tmp_path = CONFIG_PATH.with_suffix(".json")
-
-        # Write atomically (write tmp then replace)
-        with tmp_path.open("w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
-            f.write("\n")
-
-        # os.replace(tmp_path, CONFIG_PATH)
-        return True, f"Saved: {CONFIG_PATH}"
-    except PermissionError as e:
-        return False, f"Permission denied writing {CONFIG_PATH}. {e}"
+        CONFIG_PATH.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+        return True, "Saved"
     except Exception as e:
         return False, str(e)
 
@@ -141,7 +133,7 @@ def main():
     controller = ServiceController(SERVICE_NAME, WORKER_REL_PATH)
 
     root = tk.Tk()
-    root.title("Hello Pi System Service Control")
+    root.title("Hello Pi App")
     root.geometry("640x480")
 
     frame = tk.Frame(root, padx=10, pady=10)

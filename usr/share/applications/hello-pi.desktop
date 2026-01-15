@@ -2,7 +2,7 @@
 Type=Application
 Name=Hello Raspberry Pi
 Comment=Simple Tkinter Hello World App
-Exec=/usr/bin/python3 /opt/hello-pi/src/index.py
+Exec=/usr/bin/python3 /usr/share/hello-pi/index.py
 Terminal=false
 Categories=Utility;
 Icon=hello-pi

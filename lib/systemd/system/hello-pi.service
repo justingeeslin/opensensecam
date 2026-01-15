@@ -12,8 +12,8 @@ StandardOutput=journal
 StandardError=journal
 Environment=PYTHONUNBUFFERED=1
 
-WorkingDirectory=/opt/hello-pi
-ExecStart=/usr/bin/python3 /opt/hello-pi/src/worker.py
+WorkingDirectory=/usr/share/hello-pi
+ExecStart=/usr/bin/python3 /usr/share/hello-pi/worker.py
 
 # Creates /var/lib/hello-pi owned by hello-pi automatically:
 StateDirectory=hello-pi
