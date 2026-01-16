@@ -1,0 +1,25 @@
+[Unit]
+Description=OpenSenseCam
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=opensensecam
+Group=opensensecam
+
+StandardOutput=journal
+StandardError=journal
+Environment=PYTHONUNBUFFERED=1
+
+WorkingDirectory=/usr/share/opensensecam
+ExecStart=/usr/bin/python3 /usr/share/opensensecam/worker.py
+
+# Creates /var/lib/opensensecam owned by opensensecam automatically:
+StateDirectory=opensensecam
+
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

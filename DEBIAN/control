@@ -1,4 +1,4 @@
-Package: hello-pi
+Package: opensensecam
 Version: 1.0.0
 Section: utils
 Priority: optional

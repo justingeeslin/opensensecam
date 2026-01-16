@@ -3,7 +3,7 @@ import time
 import json
 from pathlib import Path
 
-APP_ID="hello-pi"
+APP_ID="opensensecam"
 CONFIG_PATH = Path(f"/var/lib/{APP_ID}/config.json")
 
 def load_config() -> dict:

@@ -4,9 +4,9 @@ set -e
 # ==============================
 # CONFIG (ONLY CHANGE THESE)
 # ==============================
-APP_ID="hello-pi"
-SERVICE_NAME="hello-pi.service"     # name of your .service file in src/
-SERVICE_USER="hello-pi"
+APP_ID="opensensecam"
+SERVICE_NAME="opensensecam.service"     # name of your .service file in src/
+SERVICE_USER="opensensecam"
 CONFIG_PATH="/var/lib/$APP_ID"
 
 # ==============================
@@ -40,7 +40,7 @@ usermod -aG $SERVICE_USER $SUDO_USER
 # sudo chown -R $SERVICE_USER:$SERVICE_USER $CONFIG_PATH
 # sudo chmod 2775 $CONFIG_PATH
 
-install -d -o hello-pi -g hello-pi -m 0755 $CONFIG_PATH
+install -d -o opensensecam -g opensensecam -m 0755 $CONFIG_PATH
 
 # Create directory for saving config
 # echo "🛠️ Creating config path in $CONFIG_PATH"
@@ -54,7 +54,7 @@ touch $CONFIG_PATH/config.json
 chmod 777 $CONFIG_PATH/config.json
 
 systemctl daemon-reload
-# systemctl enable hello-pi.service
-# systemctl start hello-pi.service
+# systemctl enable opensensecam.service
+# systemctl start opensensecam.service
 
 exit 0

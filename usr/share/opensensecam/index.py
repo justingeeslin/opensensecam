@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinter import filedialog
 
-APP_ID="hello-pi"
+APP_ID="opensensecam"
 APP_DIR=f"/var/lib/{APP_ID}"
 CONFIG_PATH = Path(f"/var/lib/{APP_ID}/config.json")
 
@@ -31,7 +31,7 @@ class ServiceController:
 
         self.service_name = service_name
 
-        # index.py is .../hello-pi/src, so app_root is one level up
+        # index.py is .../opensensecam/src, so app_root is one level up
         self._app_root = Path(__file__).resolve().parent.parent
         print(f"Setting service script to {worker_rel_path}")
         self._service_script = worker_rel_path
