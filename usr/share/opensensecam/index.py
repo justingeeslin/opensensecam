@@ -133,7 +133,7 @@ def main():
     controller = ServiceController(SERVICE_NAME, WORKER_REL_PATH)
 
     root = tk.Tk()
-    root.title("Hello Pi App")
+    root.title(f"{APP_ID} App")
     root.geometry("640x480")
 
     frame = tk.Frame(root, padx=10, pady=10)
@@ -141,7 +141,7 @@ def main():
 
     tk.Label(
         frame,
-        text="Hello Pi Background System Service",
+        text=f"{APP_ID} Background System Service",
         font=("Arial", 14)
     ).pack(pady=(0, 10))
 
