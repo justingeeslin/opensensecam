@@ -108,8 +108,7 @@ class ServiceController:
         """
         return self._run_systemctl("is-active", self.service_name)
 
-
-DEFAULT_CONFIG = {"folder": "~/", "mode": "mode_a", "note": ""}
+DEFAULT_CONFIG = {"folder": f"{APP_DIR}", "mode": "mode_a", "note": ""}
 
 def load_config() -> dict:
     try:
@@ -150,7 +149,7 @@ def main():
     
     cfg = load_config()
     
-    folder_var = tk.StringVar(value=cfg.get("folder", ""))
+    folder_var = tk.StringVar(value=cfg.get("folder", f"{APP_DIR}"))
     mode_var = tk.StringVar(value=cfg.get("mode", "mode_a"))  # radio choice
     note_var = tk.StringVar(value=cfg.get("note", ""))        # text field
 
