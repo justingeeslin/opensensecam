@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-Name=Hello Raspberry Pi
-Comment=Simple Tkinter Hello World App
+Name=OpenSenseCam
+Comment=A passive capture wearable camera
 Exec=/usr/bin/python3 /usr/share/opensensecam/index.py
 Terminal=false
 Categories=Utility;

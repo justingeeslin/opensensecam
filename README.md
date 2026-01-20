@@ -8,12 +8,22 @@ Installs with a .deb file.
 
 ### Compile a DEB file
 From just outside the project folder run,
-```dpkg-deb --root-owner-group --build app-hello-world/```
+```dpkg-deb --root-owner-group --build app-sensecam/```
 where `app-hello-world` is the name of the project folder.
 
 ### Install
 When developing install the deb file this way:
-```sudo apt install --reinstall  ./app-hello-world.deb```
+```sudo apt install --reinstall  ./app-sensecam.deb```
 
 ### Running
 Once installed, run it from the Pi Menu under Accessories. 
+
+### Uninstall
+
+```sudo apt remove opensensecam```
+
+
+### One-line for refresh
+```
+dpkg-deb --root-owner-group --build app-sensecam/ | sudo apt install --reinstall  ./app-sensecam.deb
+```
