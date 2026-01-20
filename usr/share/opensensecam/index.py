@@ -236,17 +236,17 @@ def main():
         on_save_config()
         restart_service()
         
-    tk.Button(cfg_frame, text="Update", command=save_config_restart_service).grid(row=3, column=0, columnspan=3, pady=(10, 0), sticky="w")
+    tk.Button(cfg_frame, text="Update & Restart Camera", command=save_config_restart_service).grid(row=3, column=0, columnspan=3, pady=(10, 0), sticky="w")
 
-    # tk.Button(
-    #     btn_frame, text="Start Service",
-    #     width=14, command=start_service
-    # ).pack(side="left", padx=5)
-# 
-    # tk.Button(
-    #     btn_frame, text="Stop Service",
-    #     width=14, command=stop_service
-    # ).pack(side="left", padx=5)
+    tk.Button(
+        btn_frame, text="Start Camera",
+        width=14, command=start_service
+    ).pack(side="left", padx=5)
+
+    tk.Button(
+        btn_frame, text="Stop Camera",
+        width=14, command=stop_service
+    ).pack(side="left", padx=5)
 
     status_label = tk.Label(frame, textvariable=status_var)
     status_label.pack(pady=(10, 0))
