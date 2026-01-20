@@ -1,5 +1,5 @@
-# Raspberry Pi Hello World App in Python
-A basic app that can be run from the Applications menu in Raspberry Pi OS. GUI written in Python.
+# OpenSenseCam
+An open source, SenseCam implementation, built for Raspberry Pi.
 
 ## Install
 Installs with a .deb file.
