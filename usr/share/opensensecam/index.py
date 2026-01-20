@@ -203,18 +203,18 @@ def main():
     
     tk.Button(cfg_frame, text="Browse…", command=browse_folder).grid(row=0, column=2, sticky="e")
     
-    # Radio buttons row
-    tk.Label(cfg_frame, text="Mode:").grid(row=1, column=0, sticky="w", pady=(8, 0))
-    radio_row = tk.Frame(cfg_frame)
-    radio_row.grid(row=1, column=1, columnspan=2, sticky="w", pady=(8, 0))
+    # # Radio buttons row
+    # tk.Label(cfg_frame, text="Mode:").grid(row=1, column=0, sticky="w", pady=(8, 0))
+    # radio_row = tk.Frame(cfg_frame)
+    # radio_row.grid(row=1, column=1, columnspan=2, sticky="w", pady=(8, 0))
     
-    tk.Radiobutton(radio_row, text="Mode A", variable=mode_var, value="mode_a").pack(side="left", padx=(0, 10))
-    tk.Radiobutton(radio_row, text="Mode B", variable=mode_var, value="mode_b").pack(side="left")
+    # tk.Radiobutton(radio_row, text="Mode A", variable=mode_var, value="mode_a").pack(side="left", padx=(0, 10))
+    # tk.Radiobutton(radio_row, text="Mode B", variable=mode_var, value="mode_b").pack(side="left")
     
-    # Text field row
-    tk.Label(cfg_frame, text="Note:").grid(row=2, column=0, sticky="w", pady=(8, 0))
-    tk.Entry(cfg_frame, textvariable=note_var, width=30).grid(row=2, column=1, columnspan=2, sticky="we", pady=(8, 0))
-    
+    # # Text field row
+    # tk.Label(cfg_frame, text="Note:").grid(row=2, column=0, sticky="w", pady=(8, 0))
+    # tk.Entry(cfg_frame, textvariable=note_var, width=30).grid(row=2, column=1, columnspan=2, sticky="we", pady=(8, 0))
+    # 
     cfg_frame.grid_columnconfigure(1, weight=1)
     
     def on_save_config():
@@ -233,7 +233,7 @@ def main():
     # tk.Button(cfg_frame, text="Save Config", command=on_save_config).grid(row=3, column=0, columnspan=3, pady=(10, 0), sticky="w")
     
     def save_config_restart_service():
-        on_save_config()
+        on_save_config() 
         restart_service()
         
     tk.Button(cfg_frame, text="Update & Restart Camera", command=save_config_restart_service).grid(row=3, column=0, columnspan=3, pady=(10, 0), sticky="w")
