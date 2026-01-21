@@ -140,12 +140,9 @@ def main():
 
     tk.Label(
         frame,
-        text=f"{APP_ID} Background System Service",
+        text=f"{APP_ID}",
         font=("Arial", 14)
     ).pack(pady=(0, 10))
-
-    btn_frame = tk.Frame(frame)
-    btn_frame.pack(pady=5)
     
     cfg = load_config()
     
@@ -187,11 +184,11 @@ def main():
             status_var.set(f"Status: unknown ({msg})")
 
     # ---------- Config UI ----------
-    cfg_frame = tk.LabelFrame(frame, text="Service Config", padx=10, pady=10)
+    cfg_frame = tk.LabelFrame(frame, text="Configuration", padx=10, pady=10)
     cfg_frame.pack(fill="x", pady=(10, 0))
     
     # Folder picker row
-    tk.Label(cfg_frame, text="Folder:").grid(row=0, column=0, sticky="w")
+    tk.Label(cfg_frame, text="Save Photos to:").grid(row=0, column=0, sticky="w")
     folder_entry = tk.Entry(cfg_frame, textvariable=folder_var, width=30)
     folder_entry.grid(row=0, column=1, sticky="we", padx=(5, 5))
     
@@ -233,11 +230,14 @@ def main():
     # tk.Button(cfg_frame, text="Save Config", command=on_save_config).grid(row=3, column=0, columnspan=3, pady=(10, 0), sticky="w")
     
     def save_config_restart_service():
-        on_save_config() 
+        on_save_config()
         restart_service()
         
     tk.Button(cfg_frame, text="Update & Restart Camera", command=save_config_restart_service).grid(row=3, column=0, columnspan=3, pady=(10, 0), sticky="w")
-
+    
+    btn_frame = tk.Frame(frame)
+    btn_frame.pack(pady=5)
+    
     tk.Button(
         btn_frame, text="Start Camera",
         width=14, command=start_service
