@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 import json
+import threading
+import queue
 from pathlib import Path
 import tkinter as tk
 from tkinter import messagebox
@@ -64,6 +66,30 @@ class ServiceController:
             return False, "systemctl not found"
         except Exception as e:
             return False, str(e)
+
+    def follow_logs_popen(self, lines=200):
+        """
+        Stream logs like: journalctl -u <service> -f
+        Returns a subprocess.Popen object.
+        """
+        import subprocess
+        
+        cmd = [
+            "journalctl",
+            "-u", self.service_name,
+            "-f",              # follow
+            "-n", str(lines),  # show last N then follow
+            "--no-pager",
+            "-o", "short-iso", # nicer timestamps
+        ]
+        
+        return subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,         # line-buffered
+        )
 
     # ---------- public API ----------
 
@@ -250,12 +276,79 @@ def main():
 
     status_label = tk.Label(frame, textvariable=status_var)
     status_label.pack(pady=(10, 0))
+    
+    log_q = queue.Queue()
+    log_proc = None
+    stop_log_event = threading.Event()
+    
+    log_frame = tk.LabelFrame(frame, text="Logs", padx=10, pady=10)
+    log_frame.pack(fill="both", expand=True, pady=(10, 0))
+    
+    log_text = tk.Text(log_frame, height=12, wrap="none")
+    log_text.pack(side="left", fill="both", expand=True)
+    
+    scroll_y = tk.Scrollbar(log_frame, orient="vertical", command=log_text.yview)
+    scroll_y.pack(side="right", fill="y")
+    log_text.configure(yscrollcommand=scroll_y.set)
+    
+    def _log_reader_thread():
+        nonlocal log_proc
+        try:
+            log_proc = controller.follow_logs_popen(lines=200)
+        except Exception as e:
+            log_q.put(f"[log] failed to start journalctl: {e}\n")
+            return
+    
+        for line in log_proc.stdout:
+            if stop_log_event.is_set():
+                break
+            log_q.put(line)
+    
+    def start_log_stream():
+        stop_log_event.clear()
+        t = threading.Thread(target=_log_reader_thread, daemon=True)
+        t.start()
+    
+    def stop_log_stream():
+        stop_log_event.set()
+        nonlocal log_proc
+        if log_proc and log_proc.poll() is None:
+            try:
+                log_proc.terminate()
+            except Exception:
+                pass
+        log_proc = None
+        
+    def pump_logs():
+        appended = False
+        while True:
+            try:
+                line = log_q.get_nowait()
+            except queue.Empty:
+                break
+            log_text.insert("end", line)
+            appended = True
+        
+        if appended:
+            log_text.see("end")  # autoscroll
+        
+        root.after(100, pump_logs)  # ~10fps UI updates
+    
+    start_log_stream()
+    pump_logs()
 
     def periodic_status():
         update_status()
         root.after(3000, periodic_status)
 
     periodic_status()
+    
+    def on_close():
+        stop_log_stream()
+        root.destroy()
+    
+    root.protocol("WM_DELETE_WINDOW", on_close)
+    
     root.mainloop()
 
 
