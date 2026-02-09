@@ -74,6 +74,7 @@ folder = cfg.get("folder", APP_DIR)
 mode = cfg.get("mode", "mode_a")
 note = cfg.get("note", "")
 interval = cfg.get("interval", "10")
+camera_mode = cfg.get("camera_mode")
 	
 IMAGE_DIR = os.path.expanduser(folder)
 os.makedirs(IMAGE_DIR, exist_ok=True)
@@ -250,6 +251,7 @@ class CameraPoller(threading.Thread):
 		self.interval = interval
 		print(f"Polling the camera at {self.interval} seconds")
 		self.resolution = resolution
+		print(f"Photo resolution: {self.resolution}")
 		self.jpeg_quality = jpeg_quality
 		self._stop = threading.Event()
 		self._pc2 = None
@@ -324,8 +326,10 @@ def main():
 	state = SharedState()
 	if GPS_AVAILABLE:
 		gps_thread = GPSPoller(state, interface="I2C", interval=5.0)   # ~4 Hz read of sentences
+	else:
+		print("GPS unavailable.")
 		
-	cam_thread = CameraPoller(state, interval=interval, resolution=(2304, 1296), jpeg_quality=90)
+	cam_thread = CameraPoller(state, interval=interval, resolution=(camera_mode.get("width"), camera_mode.get("height")), jpeg_quality=90)
 
 	if GPS_AVAILABLE:
 		gps_thread.start()
