@@ -506,7 +506,7 @@ def main():
         on_save_config()
         restart_service()
         
-    tk.Button(cfg_frame, text="Update & Restart Camera", command=save_config_restart_service).grid(row=4, column=0, columnspan=3, pady=(10, 0), sticky="w")
+    tk.Button(cfg_frame, text="Update & Restart Camera", command=save_config_restart_service).grid(row=4, column=0, columnspan=3, pady=(10, 0), sticky="e")
     
     btn_frame = tk.Frame(frame)
     btn_frame.pack(pady=5)
