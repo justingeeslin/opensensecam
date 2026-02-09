@@ -14,6 +14,11 @@ CONFIG_PATH = Path(f"/var/lib/{APP_ID}/config.json")
 SERVICE_NAME = f"{APP_ID}.service"      # systemd unit name
 WORKER_REL_PATH = Path(f"/usr/share/{APP_ID}/worker.py")       # script the service runs
 
+try:
+    from picamera2 import Picamera2
+    PICAMERA_AVAILABLE = True
+except ModuleNotFoundError:
+    PICAMERA_AVAILABLE = False
 
 class ServiceController:
     """
@@ -131,7 +136,7 @@ class PiCamera2Catalog:
     """
 
     def __init__(self):
-        from picamera2 import Picamera2  # import here to fail fast if missing
+        
         self._Picamera2 = Picamera2
 
         self.CAMERA_MODEL_ALIASES = {
@@ -347,6 +352,7 @@ class CameraSelectFrame(tk.LabelFrame):
 DEFAULT_CONFIG = {
     "folder": f"{APP_DIR}",
     "camera_index": 0,
+    "interval": 10,
     "camera_mode": None, 
 }
 
@@ -389,7 +395,7 @@ def main():
     folder_var = tk.StringVar(value=cfg.get("folder", f"{APP_DIR}"))
     mode_var = tk.StringVar(value=cfg.get("mode", "mode_a"))  # radio choice
     note_var = tk.StringVar(value=cfg.get("note", ""))        # text field
-
+    interval_var = tk.IntVar(value=cfg.get("interval", 10))
     status_var = tk.StringVar(value="Status: (checking...)")
 
     def start_service():
@@ -427,15 +433,21 @@ def main():
     cfg_frame = tk.LabelFrame(frame, text="Configuration", padx=10, pady=10)
     cfg_frame.pack(fill="x", pady=(10, 0))
     
-    catalog = PiCamera2Catalog()
-    cam_frame = CameraSelectFrame(cfg_frame, catalog)
-    cam_frame.grid(row=0, column=0, columnspan=3, sticky="we", pady=(0, 10))
-    cam_frame.apply_config(cfg)
+    if PICAMERA_AVAILABLE:
+        catalog = PiCamera2Catalog()
+        cam_frame = CameraSelectFrame(cfg_frame, catalog)
+        cam_frame.grid(row=0, column=0, columnspan=3, sticky="we", pady=(0, 10))
+        cam_frame.apply_config(cfg)
+    
+    # Choose the interval at which to take photos
+    tk.Label(cfg_frame, text="Photo Interval (seconds):").grid(row=1, column=0, sticky="w")
+    interval_entry = tk.Spinbox(cfg_frame, from_=1, to=99999, textvariable=interval_var, increment=1)
+    interval_entry.grid(row=1, column=1, sticky="we", padx=(5, 5))
     
     # Folder picker row
-    tk.Label(cfg_frame, text="Save Photos to:").grid(row=1, column=0, sticky="w")
-    folder_entry = tk.Entry(cfg_frame, textvariable=folder_var, width=30)
-    folder_entry.grid(row=1, column=1, sticky="we", padx=(5, 5))
+    tk.Label(cfg_frame, text="Save Photos to:").grid(row=2, column=0, sticky="w")
+    folder_entry = tk.Entry(cfg_frame, textvariable=folder_var, width=30, state="readonly")
+    folder_entry.grid(row=2, column=1, sticky="we", padx=(5, 5))
     
     def browse_folder():
         initial = folder_var.get() or str(Path.home())
@@ -443,7 +455,7 @@ def main():
         if selected:
             folder_var.set(selected)
     
-    tk.Button(cfg_frame, text="Browse…", command=browse_folder).grid(row=1, column=2, sticky="e")
+    # tk.Button(cfg_frame, text="Browse…", command=browse_folder).grid(row=1, column=2, sticky="e")
     
     # # Radio buttons row
     # tk.Label(cfg_frame, text="Mode:").grid(row=1, column=0, sticky="w", pady=(8, 0))
@@ -460,20 +472,23 @@ def main():
     cfg_frame.grid_columnconfigure(1, weight=1)
     
     def on_save_config():
-        cam_index, cam_mode = cam_frame.get_selection()
         
         camera_mode_cfg = None
-        if cam_mode is not None:
-            w, h = cam_mode.size
-            camera_mode_cfg = {
-                "width": w,
-                "height": h,
-                "format": cam_mode.fmt,
-                "fps": cam_mode.fps,
-            }
+        
+        if PICAMERA_AVAILABLE:
+            cam_index, cam_mode = cam_frame.get_selection()
+            if cam_mode is not None:
+                w, h = cam_mode.size
+                camera_mode_cfg = {
+                    "width": w,
+                    "height": h,
+                    "format": cam_mode.fmt,
+                    "fps": cam_mode.fps,
+                }
         
         data = {
             "folder": folder_var.get().strip(),
+            "interval": int(interval_entry.get()),
             "camera_index": cam_index,
             "camera_mode": camera_mode_cfg,
         }
