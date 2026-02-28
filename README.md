@@ -6,6 +6,10 @@ Installs with a .deb file.
 
 ## Development
 
+For rapid development, run `./dev-reinstall.sh` after each change. 
+
+Other useful commands include:
+
 ### Compile a DEB file
 From just outside the project folder run,
 ```dpkg-deb --root-owner-group --build app-sensecam/```
@@ -21,9 +25,3 @@ Once installed, run it from the Pi Menu under Accessories.
 ### Uninstall
 
 ```sudo apt remove opensensecam```
-
-
-### One-line for refresh
-```
-dpkg-deb --root-owner-group --build app-sensecam/ | sudo apt install --reinstall  ./app-sensecam.deb
-```

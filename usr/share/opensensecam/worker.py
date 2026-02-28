@@ -19,14 +19,21 @@ APP_ID="opensensecam"
 APP_DIR=f"/var/lib/{APP_ID}"
 CONFIG_PATH = Path(f"/var/lib/{APP_ID}/config.json")
 
+DEFAULT_CONFIG =  {
+	"folder": f"{APP_DIR}",
+	"camera_index": 0,
+	"interval": 10,
+	"camera_mode": None, 
+}
+
 def load_config() -> dict:
 	try:
 		with CONFIG_PATH.open("r", encoding="utf-8") as f:
 			return json.load(f)
 	except FileNotFoundError:
-		return {}
+		return DEFAULT_CONFIG.copy()
 	except Exception:
-		return {}
+		return DEFAULT_CONFIG.copy()
 
 if GPS_AVAILABLE:
 	# Create a serial connection for the GPS connection using default speed and
@@ -66,6 +73,8 @@ cfg = load_config()
 folder = cfg.get("folder", APP_DIR)
 mode = cfg.get("mode", "mode_a")
 note = cfg.get("note", "")
+interval = cfg.get("interval", "10")
+camera_mode = cfg.get("camera_mode")
 	
 IMAGE_DIR = os.path.expanduser(folder)
 os.makedirs(IMAGE_DIR, exist_ok=True)
@@ -240,7 +249,9 @@ class CameraPoller(threading.Thread):
 		super().__init__(daemon=True)
 		self.state = state
 		self.interval = interval
+		print(f"Polling the camera at {self.interval} seconds")
 		self.resolution = resolution
+		print(f"Photo resolution: {self.resolution}")
 		self.jpeg_quality = jpeg_quality
 		self._stop = threading.Event()
 		self._pc2 = None
@@ -315,8 +326,10 @@ def main():
 	state = SharedState()
 	if GPS_AVAILABLE:
 		gps_thread = GPSPoller(state, interface="I2C", interval=5.0)   # ~4 Hz read of sentences
+	else:
+		print("GPS unavailable.")
 		
-	cam_thread = CameraPoller(state, interval=10.0, resolution=(2304, 1296), jpeg_quality=90)
+	cam_thread = CameraPoller(state, interval=interval, resolution=(camera_mode.get("width"), camera_mode.get("height")), jpeg_quality=90)
 
 	if GPS_AVAILABLE:
 		gps_thread.start()
